@@ -8,7 +8,7 @@ let checkFilenames = [];
 let missingPaths = [];
 
 
-
+//collecting all keys
 function collectKeys(object, keys) {
   for (const key in object) {
     if (typeof object[key] === 'object') {
@@ -19,12 +19,12 @@ function collectKeys(object, keys) {
   }
 }
 
-
+//printing all paths elements 
 function printPaths(paths) {
   paths.forEach(pVal => console.log('- ' + pVal));
 }
 
-
+// reading files with translations 
 const jsonFiles = ['en.json', 'pl.json', 'uk.json'];
 jsonFiles.forEach(file => {
   try {
@@ -37,14 +37,14 @@ jsonFiles.forEach(file => {
   }
 });
 
-
+// collecting all keys from referenceData objects
 const refKeys = {};
 for (const [file, data] of Object.entries(referenceData)) {
   refKeys[file] = [];
   collectKeys(data, refKeys[file]);
 }
 
-
+//reading file .html and .ts
 fs.readdirSync('.').forEach(file => {
   if (path.extname(file) === '.html' || path.extname(file) === '.ts') {
     checkFilenames.push(file);
@@ -61,9 +61,9 @@ fs.readdirSync('.').forEach(file => {
   }
 });
 
-
+//extracts translation keys and return them as an array
 function extractTranslationKeys(content) {
-  const regex = /{{\s*"(.*?)"\s*\| translation}}/g;
+  const regex = /{{\s*"(.*?)"\s*\| translation }}/g;
   const matches = [];
   let match;
   while ((match = regex.exec(content)) !== null) {
@@ -72,13 +72,13 @@ function extractTranslationKeys(content) {
   return matches;
 }
 
-
+//checking missing keys
 checkData.forEach(({filename, keys}) => {
   const missing = keys.filter(key => !Object.values(refKeys).flat().includes(key));
   missingPaths.push({filename, missing});
 });
 
-
+//writing missing keys
 missingPaths.forEach(({filename, missing}) => {
   console.log(`Missing in ${filename}:`);
   console.log();
