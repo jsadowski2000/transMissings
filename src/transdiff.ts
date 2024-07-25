@@ -2,7 +2,7 @@ import fs from 'fs';
 import path, { dirname, join } from 'path';
 import { fileURLToPath } from 'url';
 
-// Define types
+
 interface ReferenceData {
   [key: string]: any;
 }
@@ -20,9 +20,9 @@ interface MissingPath {
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
-// Constants
 const save = false;
 const assetsDir = join(__dirname, '..', 'public', 'assets');
+const srcDir = join(__dirname, '..', 'src');
 let referenceData: ReferenceData = {};
 let checkData: CheckData[] = [];
 let checkFilenames: string[] = [];
@@ -66,21 +66,28 @@ for (const [file, data] of Object.entries(referenceData)) {
 }
 
 // Reading .html and .ts files
-fs.readdirSync('.').forEach(file => {
-  if (path.extname(file) === '.html' || path.extname(file) === '.ts') {
-    checkFilenames.push(file);
-    try {
-      const content = fs.readFileSync(file, 'utf8');
-      console.log(`Read file ${file} successfully`);
-      checkData.push({
-        filename: file,
-        keys: extractTranslationKeys(content),
-      });
-    } catch (err) {
-      console.error(`Error reading or parsing ${file}:`, err);
+function readFiles(dir: string): void {
+  console.log(`Reading directory: ${dir}`); 
+  const entries = fs.readdirSync(dir, { withFileTypes: true });
+
+  entries.forEach(entry => {
+    const fullPath = path.join(dir, entry.name);
+
+    if (entry.isDirectory()) {
+      readFiles(fullPath); 
+    } else if (entry.isFile() && (path.extname(entry.name) === '.html' || path.extname(entry.name) === '.ts')) {
+      checkFilenames.push(fullPath);
+      try {
+        const content = fs.readFileSync(fullPath, 'utf8');
+        checkData.push({
+          filename: fullPath,
+          keys: extractTranslationKeys(content),
+        });
+      } catch (err) {
+      }
     }
-  }
-});
+  });
+}
 
 // Extracts translation keys and returns them as an array
 function extractTranslationKeys(content: string): string[] {
@@ -93,6 +100,8 @@ function extractTranslationKeys(content: string): string[] {
   return matches;
 }
 
+readFiles(srcDir);
+
 // Checking missing keys
 checkData.forEach(({ filename, keys }) => {
   const missing = keys.filter(
@@ -103,10 +112,8 @@ checkData.forEach(({ filename, keys }) => {
 
 // Writing missing keys
 missingPaths.forEach(({ filename, missing }) => {
-  console.log(`Missing in ${filename}:`);
-  console.log();
+  console.log('\n',`Missing in ${filename}:`,'\n');
   printPaths(missing);
-  console.log();
 });
 
 // Save to CSV file when const save = true;
