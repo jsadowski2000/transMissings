@@ -1,5 +1,5 @@
-const fs = require('fs');
-const path = require('path');
+const fs = require("fs");
+const path = require("path");
 
 const save = false;
 let referenceData = {};
@@ -7,11 +7,10 @@ let checkData = [];
 let checkFilenames = [];
 let missingPaths = [];
 
-
 //collecting all keys
 function collectKeys(object, keys) {
   for (const key in object) {
-    if (typeof object[key] === 'object') {
+    if (typeof object[key] === "object") {
       collectKeys(object[key], keys);
     } else {
       keys.push(key);
@@ -19,16 +18,16 @@ function collectKeys(object, keys) {
   }
 }
 
-//printing all paths elements 
+//printing all paths elements
 function printPaths(paths) {
-  paths.forEach(pVal => console.log('- ' + pVal));
+  paths.forEach((pVal) => console.log("- " + pVal));
 }
 
-// reading files with translations 
-const jsonFiles = ['en.json', 'pl.json', 'uk.json'];
-jsonFiles.forEach(file => {
+// reading files with translations
+const jsonFiles = ["en.json", "pl.json", "uk.json"];
+jsonFiles.forEach((file) => {
   try {
-    const data = JSON.parse(fs.readFileSync(file, 'utf8'));
+    const data = JSON.parse(fs.readFileSync(file, "utf8"));
     referenceData[file] = data;
     console.log(`Loaded ${file} successfully`);
   } catch (err) {
@@ -45,15 +44,15 @@ for (const [file, data] of Object.entries(referenceData)) {
 }
 
 //reading file .html and .ts
-fs.readdirSync('.').forEach(file => {
-  if (path.extname(file) === '.html' || path.extname(file) === '.ts') {
+fs.readdirSync(".").forEach((file) => {
+  if (path.extname(file) === ".html" || path.extname(file) === ".ts") {
     checkFilenames.push(file);
     try {
-      const content = fs.readFileSync(file, 'utf8');
+      const content = fs.readFileSync(file, "utf8");
       console.log(`Read file ${file} successfully`);
       checkData.push({
         filename: file,
-        keys: extractTranslationKeys(content)
+        keys: extractTranslationKeys(content),
       });
     } catch (err) {
       console.error(`Error reading or parsing ${file}:`, err);
@@ -73,30 +72,33 @@ function extractTranslationKeys(content) {
 }
 
 //checking missing keys
-checkData.forEach(({filename, keys}) => {
-  const missing = keys.filter(key => !Object.values(refKeys).flat().includes(key));
-  missingPaths.push({filename, missing});
+checkData.forEach(({ filename, keys }) => {
+  const missing = keys.filter(
+    (key) => !Object.values(refKeys).flat().includes(key)
+  );
+  missingPaths.push({ filename, missing });
 });
 
 //writing missing keys
-missingPaths.forEach(({filename, missing}) => {
+missingPaths.forEach(({ filename, missing }) => {
   console.log(`Missing in ${filename}:`);
   console.log();
   printPaths(missing);
   console.log();
 });
 
-//save to csv options when const save = true;
+//save to csv file when const save = true;
 if (save) {
-  checkFilenames.forEach(filename => {
-    const missingPathsForFile = missingPaths.find(mp => mp.filename === filename)?.missing || [];
-    const csvFilename = filename.split('.')[0] + '.missing.csv';
-    let missingKeysString = missingPathsForFile.map(key => `"${key}"`).join(', ');
+  checkFilenames.forEach((filename) => {
+    const missingPathsForFile =
+      missingPaths.find((mp) => mp.filename === filename)?.missing || [];
+    const csvFilename = filename.split(".")[0] + ".missing.csv";
+    let missingKeysString = missingPathsForFile
+      .map((key) => `"${key}"`)
+      .join(", ");
     let output = `${filename}: [${missingKeysString}]`;
 
- 
-
-    fs.writeFile(csvFilename, output, err => {
+    fs.writeFile(csvFilename, output, (err) => {
       if (err) console.log(err);
     });
   });

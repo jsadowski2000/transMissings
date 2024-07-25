@@ -1,4 +1,4 @@
-# Tłumaczenia i Klucze
+# Missings translation keys
 
 Project helps you manage translation keys in JSON files and check for missing keys in .extraction. Main functionality:
 
@@ -15,5 +15,5 @@ Aby zainstalować i uruchomić ten projekt, wykonaj następujące kroki:
 1. **Clone Repository:**
 
    ```bash
-   git clone <URL_REPOSITORY>
-   cd <NAME_REPOSITORY>
+   git clone https://github.com/jsadowski2000/transMissings.git
+   cd <transMissings>
