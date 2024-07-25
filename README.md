@@ -21,4 +21,5 @@ Aby zainstalować i uruchomić ten projekt, wykonaj następujące kroki:
 2. **Install node:**
 
 ```bash
-npm install```
+npm install
+```
