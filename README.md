@@ -16,4 +16,10 @@ Aby zainstalować i uruchomić ten projekt, wykonaj następujące kroki:
 
    ```bash
    git clone https://github.com/jsadowski2000/transMissings.git
-   cd <transMissings>
+   cd transMissings ```
+
+2. **Install node:**
+
+```bash
+npm install
+```
