@@ -10,7 +10,7 @@ Project helps you manage translation keys in JSON files and check for missing ke
 
 ## Intallation
 
-Aby zainstalować i uruchomić ten projekt, wykonaj następujące kroki:
+To install and launch do:
 
 1. **Clone Repository:**
 
@@ -23,3 +23,7 @@ Aby zainstalować i uruchomić ten projekt, wykonaj następujące kroki:
 ```bash
 npm install
 ```
+
+## V1 Version
+
+In v1 version added 3 pattern version in regex
