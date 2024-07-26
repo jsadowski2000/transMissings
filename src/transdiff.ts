@@ -1,7 +1,6 @@
 import fs from 'fs';
-import path, { dirname, join } from 'path';
+import path, { dirname } from 'path';
 import { fileURLToPath } from 'url';
-
 
 interface ReferenceData {
   [key: string]: any;
@@ -20,12 +19,12 @@ interface MissingPath {
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
-const save = false;
-const assetsDir = join(__dirname, '..', 'public', 'assets');
-const srcDir = join(__dirname, '..', 'src');
+const save = true; // true if you want save it in csv
+const assetsDir = path.join(__dirname, '..', 'src', 'assets', 'i18n');
+const srcDir = path.join(__dirname, '..', 'src', 'app');
+const outputDir = path.join(__dirname, '..');
 let referenceData: ReferenceData = {};
 let checkData: CheckData[] = [];
-let checkFilenames: string[] = [];
 let missingPaths: MissingPath[] = [];
 
 // Collecting all keys
@@ -51,9 +50,9 @@ jsonFiles.forEach(file => {
   try {
     const data = JSON.parse(fs.readFileSync(filePath, 'utf8'));
     referenceData[file] = data;
-    console.log(`Loaded ${file} successfully`);
+    // console.log(`Loaded ${file} successfully`);
   } catch (err) {
-    console.error(`Error reading ${file}:`, err);
+    // console.error(`Error reading ${file}:`, err);
     process.exit(1);
   }
 });
@@ -67,16 +66,15 @@ for (const [file, data] of Object.entries(referenceData)) {
 
 // Reading .html and .ts files
 function readFiles(dir: string): void {
-  console.log(`Reading directory: ${dir}`); 
+  // console.log(`Reading directory: ${dir}`);
   const entries = fs.readdirSync(dir, { withFileTypes: true });
 
   entries.forEach(entry => {
     const fullPath = path.join(dir, entry.name);
 
     if (entry.isDirectory()) {
-      readFiles(fullPath); 
+      readFiles(fullPath);
     } else if (entry.isFile() && (path.extname(entry.name) === '.html' || path.extname(entry.name) === '.ts')) {
-      checkFilenames.push(fullPath);
       try {
         const content = fs.readFileSync(fullPath, 'utf8');
         checkData.push({
@@ -84,6 +82,7 @@ function readFiles(dir: string): void {
           keys: extractTranslationKeys(content),
         });
       } catch (err) {
+        console.error(`Error reading ${fullPath}:`, err);
       }
     }
   });
@@ -91,44 +90,59 @@ function readFiles(dir: string): void {
 
 // Extracts translation keys and returns them as an array
 function extractTranslationKeys(content: string): string[] {
-  const regex = /{{\s*"(.*?)"\s*\| translation }}/g;
-  const matches: string[] = [];
+  const regex = /(?:{{\s*['"]?([^'"}\s]+)['"]?\s*\|\s*translate\s*}})|(?:['"]([^'"]+)['"]\s*\|\s*translate)|(?:\b([^\s|{}'"]+)\b\s*\|\s*translate)/g;
+  const matches: Set<string> = new Set();
   let match: RegExpExecArray | null;
   while ((match = regex.exec(content)) !== null) {
-    matches.push(match[1]);
+    if (match[1]) {
+      matches.add(match[1].trim());
+    } else if (match[2]) {
+      matches.add(match[2].trim());
+    } else if (match[3]) {
+      matches.add(match[3].trim());
+    }
   }
-  return matches;
+  return Array.from(matches);
 }
 
 readFiles(srcDir);
 
 // Checking missing keys
-checkData.forEach(({ filename, keys }) => {
+missingPaths = checkData.map(({ filename, keys }) => {
   const missing = keys.filter(
     key => !Object.values(refKeys).flat().includes(key)
   );
-  missingPaths.push({ filename, missing });
-});
+  return { filename, missing };
+}).filter(({ missing }) => missing.length > 0); 
 
-// Writing missing keys
-missingPaths.forEach(({ filename, missing }) => {
-  console.log('\n',`Missing in ${filename}:`,'\n');
-  printPaths(missing);
-});
+// Printing missing keys
+if (missingPaths.length > 0) {
+  missingPaths.forEach(({ filename, missing }) => {
+    console.log('\n', `Missing in ${filename}:`, '\n');
+    printPaths(missing);
+  });
+} else {
+  console.log('No missing keys found.');
+}
 
-// Save to CSV file when const save = true;
-if (save) {
-  checkFilenames.forEach(filename => {
-    const missingPathsForFile =
-      missingPaths.find(mp => mp.filename === filename)?.missing || [];
-    const csvFilename = filename.split('.')[0] + '.missing.csv';
-    let missingKeysString = missingPathsForFile
-      .map(key => `"${key}"`)
-      .join(', ');
-    let output = `${filename}: [${missingKeysString}]`;
+// Writing missing keys to CSV file
+if (save && missingPaths.length > 0) {
+  const csvFilename = path.join(outputDir, 'missing_keys_report.csv');
+  const csvContent = [
+    ['Filename', 'Missing Keys'].join(', '), // CSV header
+    '', 
+    ...missingPaths.flatMap(({ filename, missing }) => {
+      const rows = [`"${filename}"`];
+      if (missing.length > 0) {
+        rows.push(...missing.map(key => `"${key}"`));
+      }
+      rows.push('');
+      return rows;
+    })
+  ].map(row => row).join('\n');
 
-    fs.writeFile(csvFilename, output, err => {
-      if (err) console.log(err);
-    });
+  fs.writeFile(csvFilename, csvContent, err => {
+    if (err) console.error(`Error writing ${csvFilename}:`, err);
+    else console.log(`All missing keys saved to ${csvFilename}`);
   });
 }
