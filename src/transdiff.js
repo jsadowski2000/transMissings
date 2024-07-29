@@ -113,7 +113,7 @@ missingPaths.forEach(({ filename, missing }) => {
 if (save && missingPaths.length > 0) {
   const csvFilename = path.join(outputDir, 'missing_keys_report.csv');
   const csvContent = [
-    ['Filename', 'Missing Keys'].join(', '), // CSV header
+    ['Filename', 'Missing Keys'].join(', '), 
     '', 
     ...missingPaths.flatMap(({ filename, missing }) => {
       const rows = [`"${filename}"`];
