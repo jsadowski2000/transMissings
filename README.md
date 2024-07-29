@@ -16,7 +16,8 @@ To install and run project do:
 
    ```bash
    git clone https://github.com/jsadowski2000/transMissings.git
-   cd transMissings ```
+   cd transMissings
+   ```
 
 2. **Install node:**
 
