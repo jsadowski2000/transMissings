@@ -55,7 +55,9 @@ function searchDirectory(directory) {
     const fullPath = path.join(directory, file);
     if (fs.statSync(fullPath).isDirectory()) {
       searchDirectory(fullPath);
-    } else if (path.extname(fullPath) === '.html' || path.extname(fullPath) === '.ts') {
+    } 
+    
+    if (path.extname(fullPath) === '.html' || path.extname(fullPath) === '.ts') {
       checkFilenames.push(fullPath);
       try {
         const content = fs.readFileSync(fullPath, 'utf8');
