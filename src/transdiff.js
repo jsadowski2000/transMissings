@@ -34,9 +34,9 @@ jsonFiles.forEach((file) => {
   try {
     const data = JSON.parse(fs.readFileSync(filePath, "utf8"));
     referenceData[file] = data;
-    console.log(`Loaded ${file} successfully`);
+    // console.log(`Loaded ${file} successfully`);
   } catch (err) {
-    console.error(`Error reading ${file}:`, err);
+    console.error(`Error reading ${file}:`, err);l
     process.exit(1);
   }
 });
@@ -46,7 +46,7 @@ const refKeys = {};
 for (const [file, data] of Object.entries(referenceData)) {
   refKeys[file] = [];
   collectKeys(data, refKeys[file]);
-  console.log(referenceData);
+  // console.log(referenceData);
 }
 
 //reading file .html and .ts
@@ -59,7 +59,7 @@ function searchDirectory(directory) {
       checkFilenames.push(fullPath);
       try {
         const content = fs.readFileSync(fullPath, 'utf8');
-        console.log(`Read file ${fullPath} successfully`);
+        // console.log(`Read file ${fullPath} successfully`);
         checkData.push({
           filename: fullPath,
           keys: extractTranslationKeys(content),
@@ -76,16 +76,13 @@ function extractTranslationKeys(content) {
   const regex = /(?:{{\s*['"]?([^'"}\s]+)['"]?\s*\|\s*translate\s*}})|(?:['"]([^'"]+)['"]\s*\|\s*translate)|(?:\b([^\s|{}'"]+)\b\s*\|\s*translate)/g;
   const matches = new Set();
   let match;
+  
   while ((match = regex.exec(content)) !== null) {
-    if (match[1]) {
-      matches.add(match[1].trim());
-    } else if (match[2]) {
-      matches.add(match[2].trim());
-    } else if (match[3]) {
-      matches.add(match[3].trim());
-    }
+    if (match[1]) matches.add(match[1].trim());
+    if (match[2]) matches.add(match[2].trim());
+    if (match[3]) matches.add(match[3].trim());
   }
-  console.log('Matches: ', matches)
+  // console.log('Matches: ', matches)
   return Array.from(matches);
   
 }
