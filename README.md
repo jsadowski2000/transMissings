@@ -10,13 +10,14 @@ Project helps you manage translation keys in JSON files and check for missing ke
 
 ## Intallation
 
-Aby zainstalować i uruchomić ten projekt, wykonaj następujące kroki:
+To install and run project do:
 
 1. **Clone Repository:**
 
    ```bash
    git clone https://github.com/jsadowski2000/transMissings.git
-   cd transMissings ```
+   cd transMissings
+   ```
 
 2. **Install node:**
 
